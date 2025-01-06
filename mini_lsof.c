@@ -47,10 +47,19 @@ void list_open_files(int pid) {
         }
         link_target[len] = '\0';  // Null-terminate the string
 
+        // Check if the file is a pipe or socket (do not stat them)
+        if (strstr(link_target, "pipe:") != NULL) {
+            printf("%-5s %-10s %-20s\n", entry->d_name, "Pipe", link_target);
+            continue;
+        }
+        if (strstr(link_target, "socket:") != NULL) {
+            printf("%-5s %-10s %-20s\n", entry->d_name, "Socket", link_target);
+            continue;
+        }
+
         // Get the file status using stat() to determine the file type
         if (stat(link_target, &file_stat) == -1) {
-            printf("Failed to stat file [%s] ", link_target);
-            perror(" ");
+            perror("Failed to stat file");
             continue;
         }
 
@@ -60,7 +69,7 @@ void list_open_files(int pid) {
             strcpy(file_type, "Regular File");
         } else if (S_ISDIR(file_stat.st_mode)) {
             strcpy(file_type, "Directory");
-            } else if (S_ISCHR(file_stat.st_mode)) {
+        } else if (S_ISCHR(file_stat.st_mode)) {
             strcpy(file_type, "Character Device");
         } else if (S_ISBLK(file_stat.st_mode)) {
             strcpy(file_type, "Block Device");
