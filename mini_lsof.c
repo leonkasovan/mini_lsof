@@ -56,11 +56,21 @@ void list_open_files(int pid) {
             printf("%-5s %-10s %-20s\n", entry->d_name, "Socket", link_target);
             continue;
         }
+        if (strstr(link_target, "anon_inode:") != NULL) {
+            // Special handling for anonymous inodes like eventfd
+            if (strstr(link_target, "eventfd") != NULL) {
+                printf("%-5s %-10s %-20s\n", entry->d_name, "Eventfd", link_target);
+            } else {
+                // For other anon_inode types, just print the path
+                printf("%-5s %-10s %-20s\n", entry->d_name, "Anon Inode", link_target);
+            }
+            continue;
+        }
 
         // Get the file status using stat() to determine the file type
         if (stat(link_target, &file_stat) == -1) {
-            printf("[%s] ", link_target);
-            perror("Failed to stat file");
+            printf("Fail to stat [%s]\n", link_target);
+            // perror("Failed to stat file");
             continue;
         }
 
