@@ -49,7 +49,8 @@ void list_open_files(int pid) {
 
         // Get the file status using stat() to determine the file type
         if (stat(link_target, &file_stat) == -1) {
-            perror("Failed to stat file");
+            printf("Failed to stat file [%s] ", link_target);
+            perror(" ");
             continue;
         }
 
