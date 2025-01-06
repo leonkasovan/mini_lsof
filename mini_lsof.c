@@ -98,6 +98,39 @@ void list_open_files(int pid) {
     closedir(dir);
 }
 
+// Add a function to count the number of open files for a given PID
+int count_open_files(int pid) {
+    char path[MAX_PATH];
+    struct dirent *entry;
+    DIR *dir;
+    int count = 0;
+
+    // Build the path to the /proc/[pid]/fd/ directory
+    snprintf(path, sizeof(path), "/proc/%d/fd/", pid);
+
+    // Open the directory
+    dir = opendir(path);
+    if (dir == NULL) {
+        perror("Failed to open directory");
+        return -1;
+    }
+
+    // Read each entry in the /proc/[pid]/fd/ directory
+    while ((entry = readdir(dir)) != NULL) {
+        // Skip '.' and '..'
+        if (strcmp(entry->d_name, ".") == 0 || strcmp(entry->d_name, "..") == 0) {
+            continue;
+        }
+
+        count++;
+    }
+
+    // Close the directory
+    closedir(dir);
+
+    return count;
+}
+
 int main(int argc, char *argv[]) {
     if (argc != 2) {
         fprintf(stderr, "Usage: %s <pid>\n", argv[0]);
